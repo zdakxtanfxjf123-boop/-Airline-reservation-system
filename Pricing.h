@@ -1,47 +1,9 @@
-#ifndef CREWMEMBER_H
-#define CREWMEMBER_H
-
-#include <iostream>
+#pragma once
 #include <string>
-using namespace std;
 
-class CrewMember
-{
-protected:
-    string name;
-    int id;
-    bool assigned;
-
-public:
-    CrewMember(string n, int i);
-
-    virtual void display();
-
-    string getName();
-
-    int getID();
-
-    bool isAssigned();
-
-    void setAssigned(bool value);
-};
-
-class Pilot : public CrewMember
+class Pricing
 {
 public:
-
-    Pilot(string n, int i);
-
-    void display() override;
+    double getBasicFare(const std::string& c) const;
+    double getFinalPrice(const std::string& c, double tax, double discount) const;
 };
-
-class FlightAttendant : public CrewMember
-{
-public:
-
-    FlightAttendant(string n, int i);
-
-    void display() override;
-};
-
-#endif

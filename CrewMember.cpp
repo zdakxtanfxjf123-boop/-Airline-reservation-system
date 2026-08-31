@@ -1,54 +1,36 @@
 #include "CrewMember.h"
+#include <iostream>
 
-CrewMember::CrewMember(string n, int i)
+using namespace std;
+
+CrewMember::CrewMember(int i, string n)
 {
-    name = n;
-    id = i;
-    assigned = false;
+    id=i;
+    name=n;
+    flightId=-1;
 }
 
-void CrewMember::display()
-{
-    cout << "Name: " << name << endl;
-    cout << "ID: " << id << endl;
-}
-
-string CrewMember::getName()
+string CrewMember::getName() const
 {
     return name;
 }
 
-int CrewMember::getID()
+int CrewMember::getID() const
 {
     return id;
 }
 
-bool CrewMember::isAssigned()
+int CrewMember::getFlightID() const
 {
-    return assigned;
+    return flightId;
 }
 
-void CrewMember::setAssigned(bool value)
+void CrewMember::setFlightID(int fid)
 {
-    assigned = value;
+    flightId = fid;
 }
 
-Pilot::Pilot(string n, int i) : CrewMember(n, i)
+void CrewMember::displayInfo() const
 {
-}
-
-void Pilot::display()
-{
-    cout << "Pilot Name: " << name << endl;
-    cout << "Pilot ID: " << id << endl;
-}
-
-FlightAttendant::FlightAttendant(string n, int i) : CrewMember(n, i)
-{
-}
-
-void FlightAttendant::display()
-{
-    cout << "Flight Attendant Name: " << name << endl;
-    cout << "Flight Attendant ID: " << id << endl;
+    cout << "Name: " << name << "\nID: " << id << endl;
 }

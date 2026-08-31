@@ -1,45 +1,21 @@
-#ifndef CREWMEMBER_H
-#define CREWMEMBER_H
-#include <iostream>
+#pragma once
 #include <string>
-using namespace std;
+
 class CrewMember
 {
 protected:
-    string name;
+    std::string name;
     int id;
-    bool assigned;
+    int flightId;
 
 public:
-    CrewMember(string n, int i);
+    CrewMember(int i, std::string n);
+    virtual ~CrewMember() = default;
 
-    virtual void display();
+    std::string getName() const;
+    int getID() const;
+    int getFlightID() const;
+    void setFlightID(int fid);
 
-    string getName();
-
-    int getID();
-
-    bool isAssigned();
-
-    void setAssigned(bool value);
+    virtual void displayInfo() const;
 };
-
-class Pilot : public CrewMember
-{
-public:
-
-    Pilot(string n, int i);
-
-    void display() override;
-};
-
-class FlightAttendant : public CrewMember
-{
-public:
-
-    FlightAttendant(string n, int i);
-
-    void display() override;
-};
-
-#endif

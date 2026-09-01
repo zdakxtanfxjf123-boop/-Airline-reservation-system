@@ -31,6 +31,8 @@ public:
 
     void bookSeat(const string& seatNumber);
     void cancelSeat(const string& seatNumber);
+    bool isSeatAvailable(const std::string& seatNumber) const;
+    string getSeatClass(const std::string& seatNumber) const;
 };
 
 #endif

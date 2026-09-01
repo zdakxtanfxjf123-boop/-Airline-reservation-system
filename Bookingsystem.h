@@ -1,34 +1,46 @@
 #ifndef BOOKINGSYSTEM_H
 #define BOOKINGSYSTEM_H
 
-#include <iostream>
 #include <vector>
+#include <iostream>
+#include <string>
+
+#include "PassengerManager.h"
+#include "Flight.h"
+#include "CrewManager.h"
+#include "Pricing.h"
 #include "Booking.h"
 #include "WaitingList.h"
-using namespace std;
+#include "Pilot.h"
+#include "FlightAttendant.h"
 
-class BookingSystem
-{
+class BookingSystem {
 private:
-    vector<Booking> bookings;
+    PassengerManager passengerManager;
+    std::vector<Flight> flights;
+    CrewManager crewManager;
+    Pricing pricing;
+    std::vector<Booking> bookings;
     WaitingList waitingList;
-    int nextBookingID;
+    int nextBookingId = 1;
+
+    Flight* findFlight(int id);
+    bool passengerHasBooking(int p, int f);
 
 public:
-    BookingSystem();
+    void addPassenger();
+    void displayPassenger();
+    void addFlight();
+    void displayFlights();
+    void bookTicket();
+    void cancelBooking();
+    void showBooking();
+    void boardingPass();
+    void addPilot();
+    void addAttendant();
+    void assignCrew();
+    void displayCrew();
     void run();
-    void addBooking(int passengerID,
-                    int flightNumber,
-                    string seat,
-                    double price);
-
-    void cancelBooking(int bookingID);
-
-    void displayBookings();
-
-    void addToWaitingList(int passengerID);
-
-    void displayWaitingList();
 };
 
 #endif

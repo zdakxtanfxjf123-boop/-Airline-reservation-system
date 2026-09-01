@@ -3,18 +3,22 @@
 
 #include <iostream>
 #include <vector>
-using namespace std;
 
-class WaitingList
-{
+struct WaitingEntry {
+    int passengerID;
+    int flightID;
+};
+
+class WaitingList {
 private:
-    vector<int> passengerIDs;
+    std::vector<WaitingEntry> entries;
 
 public:
-    void addPassenger(int id);
-    void display();
-    int getFirstPassenger();
-    void removeFirstPassenger();
+    bool hasPassenger(int passengerID, int flightID);
+    void addPassenger(int passengerID, int flightID);
+    int getFirstPassenger(int flightID);
+    void removeFirstPassenger(int flightID);
+    void displayWaitingList();
     bool isEmpty();
 };
 

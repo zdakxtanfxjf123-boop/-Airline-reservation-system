@@ -17,12 +17,11 @@ Flight::Flight(int flightNumber, string source, string destination,
     columns = 4;
 
     int rows = (capacity + columns - 1) / columns;
-
+   
     seats.resize(rows);
 
     for (int i = 0; i < rows; i++) {
         seats[i].resize(columns);
-
         for (int j = 0; j < columns; j++) {
 
             string number =
@@ -30,10 +29,8 @@ Flight::Flight(int flightNumber, string source, string destination,
 
             if (i == 0)
                 seats[i][j] = Seat(number, "First");
-
             else if (i == 1)
                 seats[i][j] = Seat(number, "Business");
-
             else
                 seats[i][j] = Seat(number, "Economy");
         }
@@ -127,4 +124,25 @@ void Flight::cancelSeat(const string& seatNumber) {
     }
 
     cout << "Seat not found\n";
+}
+bool Flight::isSeatAvailable(const string& seatNumber) const {
+    for (int i = 0; i < seats.size(); i++) {
+        for (int j = 0; j < seats[i].size(); j++) {
+            if (seats[i][j].getSeatNumber() == seatNumber) {
+                return !seats[i][j].isBooked();
+            }
+        }
+    }
+    return false;
+}
+
+string Flight::getSeatClass(const string& seatNumber) const {
+    for (int i = 0; i < seats.size(); i++) {
+        for (int j = 0; j < seats[i].size(); j++) {
+            if (seats[i][j].getSeatNumber() == seatNumber) {
+                return seats[i][j].getSeatClass();
+            }
+        }
+    }
+    return "";
 }

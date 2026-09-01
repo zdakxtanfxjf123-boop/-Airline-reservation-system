@@ -1,46 +1,53 @@
 #include "WaitingList.h"
+using namespace std;
 
-void WaitingList::addPassenger(int id)
-{
-    passengerIDs.push_back(id);
-
-    cout << "Passenger added to Waiting List." << endl;
+bool WaitingList::hasPassenger(int passengerID, int flightID) {
+    for (int i = 0; i < entries.size(); i++) {
+        if (entries[i].passengerID == passengerID && entries[i].flightID == flightID) {
+            return true;
+        }
+    }
+    return false;
 }
 
-void WaitingList::display()
-{
-    cout << "\n===== Waiting List =====" << endl;
+void WaitingList::addPassenger(int passengerID, int flightID) {
+    WaitingEntry entry;
+    entry.passengerID = passengerID;
+    entry.flightID = flightID;
+    entries.push_back(entry);
 
-    if (passengerIDs.empty())
-    {
-        cout << "Waiting List is empty." << endl;
+    cout << "Passenger " << passengerID << " added to Waiting List for Flight " << flightID << ".\n";
+}
+
+int WaitingList::getFirstPassenger(int flightID) {
+    for (int i = 0; i < entries.size(); i++) {
+        if (entries[i].flightID == flightID) {
+            return entries[i].passengerID;
+        }
+    }
+    return -1;
+}
+
+void WaitingList::removeFirstPassenger(int flightID) {
+    for (int i = 0; i < entries.size(); i++) {
+        if (entries[i].flightID == flightID) {
+            entries.erase(entries.begin() + i);
+            return;
+        }
+    }
+}
+
+void WaitingList::displayWaitingList() {
+    cout << "\n===== Waiting List =====\n";
+    if (entries.empty()) {
+        cout << "Waiting List is empty.\n";
         return;
     }
-
-    for (int i = 0; i < passengerIDs.size(); i++)
-    {
-        cout << "Passenger ID: "
-             << passengerIDs[i] << endl;
+    for (int i = 0; i < entries.size(); i++) {
+        cout << "Flight ID: " << entries[i].flightID << " | Passenger ID: " << entries[i].passengerID << "\n";
     }
 }
 
-int WaitingList::getFirstPassenger()
-{
-    if (passengerIDs.empty())
-        return -1;
-
-    return passengerIDs[0];
-}
-
-void WaitingList::removeFirstPassenger()
-{
-    if (!passengerIDs.empty())
-    {
-        passengerIDs.erase(passengerIDs.begin());
-    }
-}
-
-bool WaitingList::isEmpty()
-{
-    return passengerIDs.empty();
+bool WaitingList::isEmpty() {
+    return entries.empty();
 }

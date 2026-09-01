@@ -1,135 +1,294 @@
 #include "BookingSystem.h"
 
-BookingSystem::BookingSystem()
+Flight* BookingSystem::findFlight(int id)
 {
-    nextBookingID = 1;
-}
-
-void BookingSystem::addBooking(int passengerID,
-                               int flightNumber,
-                               string seat,
-                               double price)
-{
-    Booking newBooking(
-        nextBookingID,
-        passengerID,
-        flightNumber,
-        seat,
-        price
-    );
-
-    bookings.push_back(newBooking);
-
-    cout << "Booking added successfully!" << endl;
-    cout << "Booking ID: " << nextBookingID << endl;
-
-    nextBookingID++;
-}
-
-void BookingSystem::cancelBooking(int bookingID)
-{
-    for (int i = 0; i < bookings.size(); i++)
+    for (auto &f : flights)
     {
-        if (bookings[i].getBookingID() == bookingID)
-        {
-            bookings.erase(bookings.begin() + i);
-
-            cout << "Booking cancelled successfully!"
-                 << endl;
-
-            return;
-        }
+        if (f.getFlightNumber() == id) return &f;
     }
-
-    cout << "Booking not found!" << endl;
+    return nullptr;
 }
 
-void BookingSystem::displayBookings()
+bool BookingSystem::passengerHasBooking(int p, int f)
 {
-    if (bookings.empty())
+    for (auto &b : bookings)
     {
-        cout << "No bookings found." << endl;
+        if (b.getPassengerID() == p && b.getFlightNumber() == f) return true;
+    }
+    return false;
+}
+
+void BookingSystem::addPassenger()
+{
+    passengerManager.add_passengarinfo();
+}
+
+void BookingSystem::displayPassenger()
+{
+    int id;
+    cout << "Enter Passenger ID: ";
+    cin >> id;
+    passengerManager.display_passenger(id);
+}
+
+void BookingSystem::addFlight()
+{
+    int n, c;
+    string s, d, da, t;
+    cout << "Flight Number: ";
+    cin >> n;
+    cout << "Source: ";
+    cin >> s;
+    cout << "Destination: ";
+    cin >> d;
+    cout << "Date: ";
+    cin >> da;
+    cout << "Time: ";
+    cin >> t;
+    cout << "Capacity: ";
+    cin >> c;
+    flights.push_back(Flight(n, s, d, da, t, c));
+}
+
+void BookingSystem::displayFlights()
+{
+    for (auto &f : flights)
+    {
+        cout << "\n--------------------\n";
+        f.displayFlight();
+        f.displaySeats();
+    }
+}
+
+void BookingSystem::bookTicket()
+{
+    int p, f;
+    string seat;
+    cout << "Passenger ID: ";
+    cin >> p;
+    if (!passengerManager.passenger_Exists(p))
+    {
+        cout << "Passenger not found.\n";
         return;
     }
 
+    cout << "Flight ID: ";
+    cin >> f;
+    Flight* flight = findFlight(f);
+    if (!flight)
+    {
+        cout << "Flight not found.\n";
+        return;
+    }
+
+    if (passengerHasBooking(p, f))
+    {
+        cout << "Passenger already booked this flight.\n";
+        return;
+    }
+
+    if (flight->isFlightFull())
+    {
+        if (!waitingList.hasPassenger(p, f))
+            waitingList.addPassenger(p, f);
+        else
+            cout << "Passenger is already on waiting list.\n";
+        return;
+    }
+
+    cout << "Seat: ";
+    cin >> seat;
+    if (!flight->isSeatAvailable(seat))
+    {
+        cout << "Seat is not available or not found.\n";
+        return;
+    }
+
+    double price = pricing.getFinalPrice(flight->getSeatClass(seat), 100, 0);
+    flight->bookSeat(seat);
+    bookings.push_back(Booking(nextBookingId, p, f, seat, price));
+    passengerManager.book_ticket_for_passenger(p, nextBookingId);
+
+    cout << "Booking successful!\nBooking ID: " << nextBookingId
+         << "\nFinal Price: " << price << endl;
+    nextBookingId++;
+}
+
+void BookingSystem::cancelBooking()
+{
+    int id;
+    cout << "Booking ID: ";
+    cin >> id;
+
     for (int i = 0; i < bookings.size(); i++)
     {
-        bookings[i].display();
-    }
-}
-
-void BookingSystem::addToWaitingList(int passengerID)
-{
-    waitingList.addPassenger(passengerID);
-}
-
-void BookingSystem::displayWaitingList()
-{
-    waitingList.display();
-}
-void BookingSystem::run()
-{
-    int choice;
-    do
-    {
-        cout << "\n========================================\n";
-        cout << "       AIRLINE RESERVATION SYSTEM       \n";
-        cout << "========================================\n";
-        cout << "1. Add Booking\n";
-        cout << "2. Cancel Booking\n";
-        cout << "3. Display All Bookings\n";
-        cout << "4. Add Passenger to Waiting List\n";
-        cout << "5. Display Waiting List\n";
-        cout << "0. Exit\n";
-        cout << "----------------------------------------\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
-
-        switch (choice)
+        if (bookings[i].getBookingID() == id)
         {
-            case 1: {
-                int passengerID, flightNumber;
-                string seat;
-                double price;
+            int p = bookings[i].getPassengerID();
+            int f = bookings[i].getFlightNumber();
+            string seat = bookings[i].getSeat();
 
-                cout << "Enter Passenger ID: ";
-                cin >> passengerID;
-                cout << "Enter Flight Number: ";
-                cin >> flightNumber;
-                cout << "Enter Seat Number (e.g. A1): ";
-                cin >> seat;
-                cout << "Enter Ticket Price: ";
-                cin >> price;
+            Flight* flight = findFlight(f);
+            if (flight) flight->cancelSeat(seat);
 
-                addBooking(passengerID, flightNumber, seat, price);
-                break;
+            passengerManager.cancel_ticket_for_passenger(p, id);
+            bookings.erase(bookings.begin() + i);
+            cout << "Booking cancelled.\n";
+
+            int wp = waitingList.getFirstPassenger(f);
+            if (wp != -1 && flight)
+            {
+                waitingList.removeFirstPassenger(f);
+                double price = pricing.getFinalPrice(flight->getSeatClass(seat), 100, 0);
+                flight->bookSeat(seat);
+                bookings.push_back(Booking(nextBookingId, wp, f, seat, price));
+                passengerManager.book_ticket_for_passenger(wp, nextBookingId);
+
+                cout << "Passenger " << wp << " moved from waiting list.\nNew Booking ID: " << nextBookingId << endl;
+                nextBookingId++;
             }
-            case 2: {
-                int bookingID;
-                cout << "Enter Booking ID to cancel: ";
-                cin >> bookingID;
-                cancelBooking(bookingID);
-                break;
-            }
-            case 3:
-                displayBookings();
-                break;
-            case 4: {
-                int passengerID;
-                cout << "Enter Passenger ID for Waiting List: ";
-                cin >> passengerID;
-                addToWaitingList(passengerID);
-                break;
-            }
-            case 5:
-                displayWaitingList();
-                break;
-            case 0:
-                cout << "Exiting system. Goodbye!\n";
-                break;
-            default:
-                cout << "Invalid choice! Please try again.\n";
+            return;
         }
     }
-    while (choice != 0);
+    cout << "Booking not found.\n";
+}
+
+void BookingSystem::showBooking()
+{
+    int id;
+    cout << "Booking ID: ";
+    cin >> id;
+    for (auto &b : bookings)
+    {
+        if (b.getBookingID() == id)
+        {
+            b.display();
+            return;
+        }
+    }
+    cout << "Booking not found.\n";
+}
+void BookingSystem::boardingPass()
+{
+    int id;
+    cout << "Booking ID: ";
+    cin >> id;
+    for (auto &b : bookings)
+    {
+        if (b.getBookingID() == id)
+        {
+            string seat = b.getSeat();
+            passengerManager.print_board_pass(b.getPassengerID(), seat);
+            return;
+        }
+    }
+    cout << "Booking not found.\n";
+}
+void BookingSystem::addPilot()
+{
+    int id;
+    string n, l;
+    cout << "Pilot ID: ";
+    cin >> id;
+    cout << "Name: ";
+    cin >> n;
+    cout << "License: ";
+    cin >> l;
+    crewManager.addCrew(new Pilot(id, n, l));
+}
+
+void BookingSystem::addAttendant()
+{
+    int id;
+    string n, l;
+    cout << "Attendant ID: ";
+    cin >> id;
+    cout << "Name: ";
+    cin >> n;
+    cout << "Language: ";
+    cin >> l;
+    crewManager.addCrew(new FlightAttendant(id, n, l));
+}
+
+void BookingSystem::assignCrew()
+{
+    int c, f;
+    cout << "Crew ID: ";
+    cin >> c;
+    cout << "Flight ID: ";
+    cin >> f;
+    if (findFlight(f))
+        crewManager.assignCrewToFlight(c, f);
+    else
+        cout << "Flight not found.\n";
+}
+
+void BookingSystem::displayCrew()
+{
+    int f;
+    cout << "Flight ID: ";
+    cin >> f;
+    crewManager.displayCrewForFlight(f);
+}
+
+void BookingSystem::run()
+{
+    int ch;
+    do
+    {
+        cout << "\n========== AIRLINE RESERVATION SYSTEM ==========\n";
+        cout << "1 Add Passenger\n2 Display Passenger\n3 Add Flight\n4 Display Flights\n"
+             << "5 Book Ticket\n6 Cancel Booking\n7 Show Booking\n8 Boarding Pass\n"
+             << "9 Add Pilot\n10 Add Flight Attendant\n11 Assign Crew\n12 Display Crew\n"
+             << "13 Display Waiting List\n0 Exit\nChoice: ";
+        cin >> ch;
+        switch (ch)
+        {
+        case 1:
+            addPassenger();
+            break;
+        case 2:
+            displayPassenger();
+            break;
+        case 3:
+            addFlight();
+            break;
+        case 4:
+            displayFlights();
+            break;
+        case 5:
+            bookTicket();
+            break;
+        case 6:
+            cancelBooking();
+            break;
+        case 7:
+            showBooking();
+            break;
+        case 8:
+            boardingPass();
+            break;
+        case 9:
+            addPilot();
+            break;
+        case 10:
+            addAttendant();
+            break;
+        case 11:
+            assignCrew();
+            break;
+        case 12:
+            displayCrew();
+            break;
+        case 13:
+            waitingList.displayWaitingList();
+            break;
+        case 0:
+            cout << "Goodbye!\n";
+            break;
+        default:
+            cout << "Invalid choice.\n";
+        }
+    }
+    while (ch != 0);
 }
